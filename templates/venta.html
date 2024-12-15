@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venta de Productos</title>
+    <style>
+        /* Estilos generales */
+        body {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        /* Contenedor para productos y carrito */
+        #left-container, #right-container {
+            width: 48%;
+        }
+
+        /* Estilos para las tarjetas de productos */
+        .product-card {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .product-card p {
+            margin: 10px 0;
+        }
+
+        .product-card strong {
+            display: block;
+            margin: 5px 0;
+        }
+
+        /* Estilos para el carrito de compras */
+        #ticket-list {
+            margin: 20px;
+            list-style: none;
+        }
+
+        #total {
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        /* Modal */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="left-container">
+        <h1>Venta de Productos</h1>
+        <!-- Barra de búsqueda -->
+        <input type="text" id="search-bar" placeholder="Buscar producto...">
+        <!-- Contenedor de productos -->
+        <div id="products-container"></div>
+    </div>
+
+    <div id="right-container">
+        <h2>Carrito</h2>
+        <div id="ticket-list"></div>
+        <p>Total: $<span id="total">0</span></p>
+        <button id="sell-btn">Confirmar Venta</button>
+
+        <!-- Modal para confirmar venta -->
+        <div id="modal">
+            <div id="modal-content">
+                <h2>Confirmar Venta</h2>
+                <div id="modal-ticket-list"></div>
+                <p>Total: $<span id="modal-total"></span></p>
+                <button id="confirm-btn">Confirmar</button>
+                <button id="close-modal-btn">Cerrar</button>
+                <button id="cancel-btn">Cancelar Venta</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Aceite 123", price: 42, image: "static/images/1-2-3.jpg" },
+            { id: 2, name: "Aceite nutrioli", price: 45, image: "static/images/nutrioli.jpg" },
+            { id: 3, name: "Arroz Schettino", price: 21.50, image: "static/images/arroz_schetino.jpg" },
+            { id: 4, name: "Arroz SOS", price: 25, image: "static/images/Arroz_sos.jpg" },
+            { id: 5, name: "Arroz Valle Verde", price: 39, image: "static/images/arroz_valleverde.jpg" },
+            { id: 6, name: "Atun aceite dolores", price: 27, image: "static/images/atun_doloresaceite.jpg" },
+            { id: 7, name: "Atun agua dolores", price: 23.5, image: "static/images/Atun_doloresagua.jpg" },
+            { id: 8, name: "atun tuny", price: 25, image: "static/images/Atun_tuny.jpg" },
+            { id: 9, name: "Aceite capullo", price: 41, image: "static/images/capullo.jpg" },
+            { id: 10, name: "Sopa caracol1", price: 10, image: "static/images/caracol1.jpg" },
+            { id: 11, name: "Coca cola retornable 2lts", price: 33, image: "static/images/coca2retornable.jpg" },
+            { id: 12, name: "Coca cola 3lts", price: 50, image: "static/images/coca3lts.jpg" },
+            { id: 13, name: "Coca cola 3lts retornable", price: 40, image: "static/images/coca3retornable.jpg" },
+            { id: 14, name: "Coca cola 600ml", price: 22, image: "static/images/coca600.jpg" },
+            { id: 15, name: "Coca cola lata", price: 25, image: "static/images/cocalata.jpg" },
+            { id: 16, name: "Coca cola vidrio", price: 25, image: "static/images/cocavidrio.jpg" },
+            { id: 17, name: "Sopa codo1", price: 10, image: "static/images/codo1.jpg" },
+            { id: 18, name: "Aceite cristal", price: 45, image: "static/images/cristal.jpg" },
+            { id: 19, name: "fabuloso azul", price: 30, image: "static/images/fabulosoazul.jpg" },
+            { id: 20, name: "fabuloso morado", price: 30, image: "static/images/fabulosomorado.jpg" },
+            { id: 21, name: "Fanta 3lts", price: 40, image: "static/images/fanta3.jpg" },
+            { id: 22, name: "Sopa fideo 0", price: 10, image: "static/images/fideo0.jpg" },
+        ];
+
+        let ticket = [];
+
+        function displayProducts() {
+            const container = document.getElementById("products-container");
+            container.innerHTML = "";
+            products.forEach(product => {
+                const productCard = document.createElement("div");
+                productCard.classList.add("product-card");
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <p>${product.name}</p>
+                    <strong>$${product.price.toLocaleString()}</strong>
+                `;
+                productCard.addEventListener("click", () => addToTicket(product));
+                container.appendChild(productCard);
+            });
+        }
+
+        function addToTicket(product) {
+            const existingItem = ticket.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                ticket.push({ ...product, quantity: 1 });
+            }
+            updateTicket();
+        }
+
+        function updateTicket() {
+            const ticketList = document.getElementById("ticket-list");
+            const totalSpan = document.getElementById("total");
+
+            ticketList.innerHTML = "";
+            let total = 0;
+
+            ticket.forEach((item, index) => {
+                total += item.price * item.quantity;
+                const ticketItem = document.createElement("div");
+                ticketItem.style.display = "flex";
+                ticketItem.style.justifyContent = "space-between";
+                ticketItem.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        $${item.price.toLocaleString()} x ${item.quantity}
+                    </div>
+                    <div>
+                        <button onclick="changeQuantity(${index}, -1)">-</button>
+                        ${item.quantity}
+                        <button onclick="changeQuantity(${index}, 1)">+</button>
+                    </div>
+                `;
+                ticketList.appendChild(ticketItem);
+            });
+
+            totalSpan.textContent = total.toLocaleString();
+        }
+
+        function changeQuantity(index, delta) {
+            ticket[index].quantity += delta;
+            if (ticket[index].quantity <= 0) ticket.splice(index, 1);
+            updateTicket();
+        }
+
+        document.getElementById("sell-btn").addEventListener("click", () => {
+            const modal = document.getElementById("modal");
+            const modalTicketList = document.getElementById("modal-ticket-list");
+            const modalTotal = document.getElementById("modal-total");
+
+            modalTicketList.innerHTML = "";
+            let total = 0;
+
+            ticket.forEach(item => {
+                total += item.price * item.quantity;
+                const ticketItem = document.createElement("div");
+                ticketItem.textContent = `${item.name} - $${item.price} x ${item.quantity}`;
+                modalTicketList.appendChild(ticketItem);
+            });
+
+            modalTotal.textContent = total.toLocaleString();
+            modal.style.display = "flex";
+        });
+
+        document.getElementById("confirm-btn").addEventListener("click", async () => {
+            try {
+                const response = await fetch('/procesar-venta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ticket })
+                });
+
+                if (response.ok) {
+                    alert("Venta confirmada");
+                    ticket = [];
+                    updateTicket();
+                    document.getElementById("modal").style.display = "none";
+                } else {
+                    const error = await response.json();
+                    alert(error.error || "Error al procesar la venta");
+                }
+            } catch (error) {
+                alert("Error de red");
+            }
+        });
+
+        document.getElementById("close-modal-btn").addEventListener("click", () => {
+            document.getElementById("modal").style.display = "none";
+        });
+
+        document.getElementById("cancel-btn").addEventListener("click", () => {
+            if (confirm("¿Deseas cancelar la venta?")) {
+                window.location.href = "/";
+            }
+        });
+
+        document.getElementById("search-bar").addEventListener("input", (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm));
+            displayFilteredProducts(filteredProducts);
+        });
+
+        function displayFilteredProducts(filteredProducts) {
+            const container = document.getElementById("products-container");
+            container.innerHTML = "";
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement("div");
+                productCard.classList.add("product-card");
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <p>${product.name}</p>
+                    <strong>$${product.price.toLocaleString()}</strong>
+                `;
+                productCard.addEventListener("click", () => addToTicket(product));
+                container.appendChild(productCard);
+            });
+        }
+
+        displayProducts();
+    </script>
+
+</body>
+</html>

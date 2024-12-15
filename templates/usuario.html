@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .container h2 {
+            color: white;
+        }
+        .container input[type="email"],
+        .container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        .container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container input[type="submit"]:hover {
+            background-color: darkred;
+        }
+        .container a {
+            color: lightgrey;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Inicio de Sesión</h2>
+        <form action="/login" method="post">
+            <input type="email" name="email" placeholder="Dirección de correo electrónico" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <a href="#">¿Olvidaste tu contraseña?</a>
+            <input type="submit" value="Iniciar sesión">
+        </form>
+        <a href="/register">Registrarse</a>
+    </div>
+</body>
+</html>

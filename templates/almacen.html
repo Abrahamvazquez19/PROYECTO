@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacenamiento</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('./images/almacen.jpg') no-repeat center center fixed;
+            background-size: 100% 100%;
+        }
+        .header {
+            background: linear-gradient(90deg, #036d5b, #28a745);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-bottom: 4px solid #28a745;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: linear-gradient(90deg, #28a745, #036d5b);
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #dff0d8;
+        }
+        button {
+            padding: 10px 15px;
+            margin-right: 5px;
+            background-color: #1b6ca8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            background-color: #14557a;
+        }
+        #regresarMenu {
+            margin-top: 20px;
+            background: linear-gradient(90deg, #28a745, #036d5b);
+        }
+        #regresarMenu:hover {
+            background: #218838;
+        }
+        .icon {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        #passwordPrompt {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f7f9fc;
+            border: 1px solid #cfd8dc;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        #passwordInput {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #036d5b;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            width: 80%;
+        }
+        #submitPassword {
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #1b6ca8, #14557a);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #submitPassword:hover {
+            background: #14557a;
+            transform: translateY(-3px);
+        }
+        #errorMessage {
+            color: #d93025;
+            margin-top: 10px;
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            padding: 15px;
+            background: #036d5b;
+            color: white;
+            font-size: 14px;
+            border-top: 4px solid #28a745;
+        }
+        footer a {
+            color: #c8e6c9;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="productosContainer" style="display:none;">
+        <h1>Gestión de Almacenamiento</h1>
+        <table id="productosTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button id="addProductBtn"><span class="icon">➕</span>Agregar Producto</button>
+        <button id="regresarMenu"onclick="window.location.href='menu.html'"><span class="icon">🏠</span>Regresar al Menú</button>
+        <button id="regresarMenu" onclick="window.location.href='cortecaja.html'"><span class="icon">📋</span>Corte de Caja</button>
+    </div>
+    <div id="passwordPrompt">
+        <h2>Acceso al Almacenamiento</h2>
+        <p>Por favor, ingresa la contraseña para acceder al almacenamiento.</p>
+        <input type="password" id="passwordInput" placeholder="Contraseña" />
+        <button id="submitPassword">Acceder</button>
+        <p id="errorMessage" style="color:red; display:none;">Contraseña incorrecta. Intenta nuevamente.</p>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIClDKh8-lqSi3jggo9XLbClhRr_STkj4",
+            authDomain: "puntos-ventas-7d05f.firebaseapp.com",
+            projectId: "puntos-ventas-7d05f",
+            storageBucket: "puntos-ventas-7d05f.firebasestorage.app",
+            messagingSenderId: "1091925750963",
+            appId: "1:1091925750963:web:9de1e6c4c52f7005332cc6",
+            measurementId: "G-FKM3H0TW59",
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const productosTable = document.getElementById("productosTable").querySelector("tbody");
+        const addProductBtn = document.getElementById("addProductBtn");
+        const passwordPrompt = document.getElementById("passwordPrompt");
+        const productosContainer = document.getElementById("productosContainer");
+        const submitPassword = document.getElementById("submitPassword");
+        const passwordInput = document.getElementById("passwordInput");
+        const errorMessage = document.getElementById("errorMessage");
+        const correctPassword = "admin123";
+        const loadProductos = async () => {
+            productosTable.innerHTML = "";
+            const querySnapshot = await getDocs(collection(db, "Productos"));
+            querySnapshot.forEach((doc) => {
+                const producto = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${doc.id}</td>
+                    <td>${producto.nombre}</td>
+                    <td>$${producto.precio}</td>
+                    <td>${producto.stock}</td>
+                    <td>
+                        <button class="editBtn" data-id="${doc.id}">Editar</button>
+                        <button class="deleteBtn" data-id="${doc.id}">Eliminar</button>
+                    </td>
+                `;
+                productosTable.appendChild(row);
+            });
+            const editButtons = document.querySelectorAll('.editBtn');
+            editButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    editProduct(id);
+                });
+            });
+            const deleteButtons = document.querySelectorAll('.deleteBtn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    deleteProduct(id);
+                });
+            });
+        };
+        const editProduct = async (id) => {
+            const productoDoc = doc(db, "Productos", id);
+            const productoSnap = await getDoc(productoDoc);
+            const producto = productoSnap.data();
+            const cantidadAgregar = prompt("¿Cuántos productos quieres añadir al stock?", 0);
+            const nuevoPrecio = prompt("¿Cuál será el nuevo precio del producto?", producto.precio);
+            if (cantidadAgregar && !isNaN(cantidadAgregar) && cantidadAgregar > 0 &&
+            nuevoPrecio !== null && !isNaN(nuevoPrecio) && nuevoPrecio >= 0) {
+                await updateDoc(productoDoc, {
+                    stock: producto.stock + parseInt(cantidadAgregar),precio: parseFloat(nuevoPrecio),
+                });
+                loadProductos();
+            }
+        };
+        const deleteProduct = async (id) => {
+            if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                await deleteDoc(doc(db, "Productos", id));
+                loadProductos();
+            }
+        };
+        submitPassword.addEventListener("click", () => {
+            const password = passwordInput.value;
+            if (password === correctPassword) {
+                passwordPrompt.style.display = "none";
+                productosContainer.style.display = "block";
+                loadProductos();
+            } else {
+                errorMessage.style.display = "block";
+            }
+        });
+        addProductBtn.addEventListener("click", async () => {
+            const nombre = prompt("Nombre del producto:");
+            const precio = parseFloat(prompt("Precio del producto:"));
+            const stock = parseInt(prompt("Cantidad de stock:"));
+
+            if (nombre && precio && stock) {
+                await addDoc(collection(db, "Productos"), {
+                    nombre,
+                    precio,
+                    stock,
+                });
+                loadProductos();
+            }
+        });
+    </script>
+</body>
+</html>

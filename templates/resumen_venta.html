@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .ticket-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .total {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resumen de Venta</h1>
+        <div id="ticket-items"></div>
+        <div class="total">Total: $<span id="total-amount">{{ total }}</span></div>
+    </div>
+    <script>
+        const ticket = {{ ticket | tojson }};
+        const ticketItemsContainer = document.getElementById('ticket-items');
+
+        ticket.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'ticket-item';
+            itemDiv.innerHTML = `<span>${item.name} x ${item.quantity}</span><span>$${item.price * item.quantity}</span>`;
+            ticketItemsContainer.appendChild(itemDiv);
+        });
+    </script>
+</body>
+</html>
